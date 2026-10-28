@@ -22,11 +22,12 @@ def agrupar(valores,tol):
     return grupos
 
 def detectarTablero(img):
-    imgInt=img.astype(int)
-    fondo=imgInt[5,5]
-    difFondo=np.abs(imgInt-fondo).max(axis=2)
-    difBlanco=np.abs(imgInt-255).max(axis=2)
-    mascara=((difFondo>12)&(difBlanco>12)).astype(np.uint8)
+    f=img[5,5].astype(int)
+    bajo=np.clip(f-12,0,255).astype(np.uint8)
+    alto=np.clip(f+12,0,255).astype(np.uint8)
+    esFondo=cv2.inRange(img,bajo,alto)
+    esBlanco=cv2.inRange(img,(243,243,243),(255,255,255))
+    mascara=cv2.bitwise_not(cv2.bitwise_or(esFondo,esBlanco))//255
     total,_,stats,_=cv2.connectedComponentsWithStats(mascara)
     cand=[]
     for i in range(1,total):
@@ -110,11 +111,14 @@ def resolver(matriz,iniciales):
     if colocar(matriz,0,gatos,fijas,colsUsadas,regsUsadas): return gatos,fijas
     return None,fijas
 
-def tocar(fila,col,N,X0,Y0,X1,Y1,serial):
+def tocarTodos(celdas,N,X0,Y0,X1,Y1,serial):
     cw,ch=(X1-X0)/N,(Y1-Y0)/N
-    x=int(X0+(col+0.5)*cw)
-    y=int(Y0+(fila+0.5)*ch)
-    subprocess.run(["adb","-s",serial,"shell",f"input tap {x} {y} & input tap {x} {y}"])
+    partes=[]
+    for fila,col in celdas:
+        x=int(X0+(col+0.5)*cw)
+        y=int(Y0+(fila+0.5)*ch)
+        partes.append(f"input tap {x} {y} & input tap {x} {y} & wait")
+    subprocess.run(["adb","-s",serial,"shell"," ; ".join(partes)])
 
 def procesar(img):
     tablero=detectarTablero(img)
@@ -132,10 +136,8 @@ def resolverNivel(serial):
     tablero,matriz,sol,fijas=procesar(img)
     N,X0,Y0,X1,Y1=tablero
     print(serial,"-> Tablero",N,"x",N,sol)
-    for fila,col in enumerate(sol):
-        if fijas[fila]: continue
-        tocar(fila,col,N,X0,Y0,X1,Y1,serial)
-        time.sleep(0.0001)
+    celdas=[(f,c) for f,c in enumerate(sol) if not fijas[f]]
+    tocarTodos(celdas,N,X0,Y0,X1,Y1,serial)
 
 def leerPantallaTactil(serial):
     salida=subprocess.run(["adb","-s",serial,"shell","getevent","-lp"],capture_output=True,text=True).stdout
@@ -154,7 +156,7 @@ def leerPantallaTactil(serial):
 def ejecutar(serial,bloqueo):
     try:
         resolverNivel(serial)
-    except SystemExit as e:
+    except (SystemExit,Exception) as e:
         print(serial,"->",e)
     finally:
         bloqueo.release()
