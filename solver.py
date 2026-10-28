@@ -188,5 +188,5 @@ if __name__=="__main__":
     dispositivos=listarDispositivos()
     print("Dispositivos:",dispositivos)
     for serial in dispositivos: threading.Thread(target=escuchar,args=(serial,),daemon=True).start()
-    print("Pulsa la zona entre nivel y puntuacion en el celular que quieras resolver. Ctrl+C para salir.")
-    while True: time.sleep(0.5)
+    print("Pulsa la zona entre nivel y puntuacion en el celular conectado que quieras usar. Ctrl+C para salir.")
+    while True: time.sleep(0.3)
