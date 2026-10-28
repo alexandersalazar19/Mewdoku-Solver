@@ -6,7 +6,7 @@ import threading
 import re
 from collections import Counter
 
-ZONA=(0.22,0.78,0.04,0.10) #Zona disparadora, como fracción de la pantalla: (x desde, x hasta, y desde, y hasta)
+ZONA=(0.36,0.64,0.12,0.18) # Zona disparadora, como fracción de la pantalla: (x desde, x hasta, y desde, y hasta)
 TOL=20
 
 def capturar(serial):

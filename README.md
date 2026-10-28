@@ -36,7 +36,7 @@ adb devices
 ```bash
 python3 solver.py
 ```
-4. Toca una sola vez en la parte superior central de la pantalla de juego (en medio de la puntuación y el nivel), para resolver automáticamente.
+4. Toca una sola vez en la parte de los pescaditos, para resolver automáticamente.
 5. Presiona Ctrl+C para terminar el programa.
 
 
